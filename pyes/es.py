@@ -1011,7 +1011,7 @@ class ES(object):
         return data['_name'], base64.standard_b64decode(data['content'])
         #return data["_source"]['_name'], base64.standard_b64decode(data["_source"]['content'])
 
-    def partial_update(self, index, doc_type, id, script, params=None,
+    def partial_update(self, index, doc_type, id, doc=None, script=None, params=None,
                        upsert=None, querystring_args=None):
         """
         Partially update a document with a script
@@ -1019,10 +1019,15 @@ class ES(object):
         if querystring_args is None:
             querystring_args = {}
 
-        cmd = {"script": script}
+        if doc is None and script is None:
+            raise InvalidQuery("script or doc can not both be None")
 
-        if params:
-            cmd["params"] = params
+        if doc is None:
+            cmd = {"script": script}
+            if params:
+                cmd["params"] = params
+        else:
+            cmd = {"doc": doc }
 
         if upsert:
             cmd["upsert"] = upsert
